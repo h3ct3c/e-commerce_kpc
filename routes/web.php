@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\HomeController as UserHomeController;
 use App\Http\Controllers\User\ProductController as UserProductController;
@@ -17,14 +18,16 @@ Route::get('/', function () {
 });
 
 // User routes
-Route::get('/home', [UserHomeController::class, 'index'])->name('home');
-Route::get('/produk/{id}', [UserProductController::class, 'show'])->name('product.show');
-Route::get('/cart', [UserCartController::class, 'index'])->name('cart.index');
-Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('checkout.index');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/home', [UserHomeController::class, 'index'])->name('home');
+    Route::get('/produk/{id}', [UserProductController::class, 'show'])->name('product.show');
+    Route::get('/cart', [UserCartController::class, 'index'])->name('cart.index');
+    Route::get('/checkout', [UserCheckoutController::class, 'index'])->name('checkout.index');
+});
 
 // Admin routes
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+Route::middleware(['auth', ' admin'])->group(function () {
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::resource('/products', AdminProductController::class);
     Route::resource('/categories', AdminCategoryController::class);
     Route::resource('/colors', AdminColorController::class);
@@ -32,3 +35,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
 // Auth
 Auth::routes();
+
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+})->name('logout');
